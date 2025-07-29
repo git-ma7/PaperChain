@@ -1,1 +1,143 @@
 @import "tailwindcss";
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 116, 139, 0.6);
+    /* Tailwind slate-500 w/ opacity */
+    border-radius: 9999px;
+    /* Fully rounded */
+    border: none;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(100, 116, 139, 0.8);
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url('/src/assets/fonts/Montserrat/Montserrat-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Syne';
+    src: url('/src/assets/fonts/Syne/Syne-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Oswald';
+    src: url('/src/assets/fonts/Oswald/Oswald-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'CaviarDreams';
+    src: url('/src/assets/fonts/caviar_dreams/CaviarDreams.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Dastin';
+    src: url('/src/assets/fonts/dastin/Dastin.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Adam';
+    src: url('/src/assets/fonts/adam/Adam-Medium.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Quicksand';
+    src: url('/src/assets/fonts/quicksand/Quicksand_Book.otf') format('truetype');
+}
+
+.sidebar-li:hover{
+    background-color: #bcbcbc75;
+}
+
+.sidebar-li.active{
+    background-color: #bcbcbc75;
+}
+
+.normal{
+    background-color: #7905df48;
+    color: #7905df;
+}
+
+.verified{
+    background-color: #05df723c;
+    color: #029149;
+}
+
+.pending{
+    background-color: #f5ea5b6d;
+    color: #a59b06;
+}
+
+.failed{
+    background-color: #d9544f3c;
+    color: #ff4740;
+}
+
+@layer utilities {
+    @keyframes blobMove1 {
+
+        0%,
+        100% {
+            transform: translate(-50%, -50%) translateX(0px) translateY(0px);
+        }
+
+        50% {
+            transform: translate(-50%, -50%) translateX(30px) translateY(-20px);
+            transform: scale(1.05);
+            opacity: 0.7;
+
+        }
+    }
+
+    @keyframes blobMove2 {
+
+        0%,
+        100% {
+            transform: translate(-50%, -50%) translateX(0px) translateY(0px);
+        }
+
+        50% {
+            transform: translate(-50%, -50%) translateX(-20px) translateY(30px);
+            transform: scale(1.05);
+            opacity: 0.7;
+
+        }
+    }
+
+    @keyframes blobMove3 {
+
+        0%,
+        100% {
+            transform: translate(-50%, -50%) translateX(0px) translateY(0px);
+        }
+
+        50% {
+            transform: translate(-50%, -50%) translateX(40px) translateY(-25px);
+            transform: scale(1.05);
+            opacity: 0.7;
+        }
+    }
+
+    .animate-blob-1 {
+        animation: blobMove1 8s ease-in-out infinite;
+    }
+
+    .animate-blob-2 {
+        animation: blobMove2 10s ease-in-out infinite;
+    }
+
+    .animate-blob-3 {
+        animation: blobMove3 12s ease-in-out infinite;
+    }
+}
