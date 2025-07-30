@@ -14,7 +14,7 @@ function Navbar() {
     }
 
     return (
-        <div className={`fixed border border-black/10 rounded-lg bg-white/30 backdrop-blur-2xl z-40 max-w-[1300px] top-4 left-1/2 -translate-x-1/2 w-3/4 lg:w-[95%] flex items-center justify-between py-2 px-6 transition-all duration-200 ease-in-out ${isMenuOpen ? 'flex-col items-center h-fit' : ''}`} style={{ fontFamily: "montserrat" }}>
+        <div className={`fixed border border-black/10 rounded-lg bg-white/30 backdrop-blur-2xl z-50 max-w-[1300px] top-4 left-1/2 -translate-x-1/2 w-[91%] flex items-start md:items-center justify-between py-2 px-6 transition-all duration-200 ease-in-out ${isMenuOpen ? 'flex-col items-start h-[186px]' : 'h-[50px] md:h-fit'}`} style={{ fontFamily: "montserrat" }}>
             <div className='absolute z-40 right-6 top-3 md:hidden'>
                 {isMenuOpen ? 
                     <AiOutlineClose size={24} className='cursor-pointer transition-all duration-300 ease-in-out' onClick={toggleMenu}/> :

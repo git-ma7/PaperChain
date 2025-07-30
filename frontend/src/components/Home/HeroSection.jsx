@@ -3,7 +3,7 @@ import {GoRocket, GoUpload, GoEye, GoArrowRight} from 'react-icons/go'
 
 function HeroSection() {
   return (
-    <div className='border w-full mt-17 max-w-[1300px] mx-auto flex flex-col h-[91vh] items-center justify-center gap-6 homesection'>
+    <div className='w-full mt-17 max-w-[1300px] mx-auto flex flex-col h-[91vh] items-center justify-center gap-6 homesection'>
         <div className='border border-black/20 bg-white/40 backdrop-blur-xl rounded-2xl text-purple-700 w-fit px-4 mx-auto justify-center flex items-center gap-2'>
             <GoRocket />
             <span className='text-sm '>Powered by Blockchain</span>

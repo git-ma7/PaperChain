@@ -3,9 +3,9 @@ import { GoFile, GoDownload } from 'react-icons/go'
 
 function DB_List_Card(props) {
     return (
-        <div className='flex border-black/10 cursor-pointer shadow-sm hover:shadow-lg bg-white/70 hover:bg-white/50 transition-all duration-200 backdrop-blur-lg justify-between px-6 py-4 border rounded-md mx-10'>
+        <div className='flex flex-col md:flex-row border-black/10 cursor-pointer shadow-sm hover:shadow-md bg-white/50 hover:bg-white/70 transition-all duration-200 backdrop-blur-lg justify-between px-6 py-4 border rounded-md'>
             <div className='flex gap-4 items-center'>
-                <GoFile size={40} />
+                <GoFile size={40}  className='text-black/60'/>
                 <div className='flex flex-col gap-1'>
                     <span className='font-bold'>{props.fileName}</span>
                     <div className='flex gap-1'>
@@ -15,9 +15,9 @@ function DB_List_Card(props) {
                     </div>
                 </div>
             </div>
-            <div className='flex gap-8 items-center px-6'>
+            <div className='w-full flex mt-2 md:mt-0 justify-between md:justify-end gap-2 items-center md:px-6'>
                 <span className={`border-white/20 rounded-full w-[90px] text-center py-1 text-sm tracking-wide ${props.status == "Verified" ? 'verified' : props.status == "Pending" ? 'pending' : 'failed'}`}>{props.status}</span>
-                <div className='p-2 bg-black/5 hover:bg-black/10 transition-all duration-150 rounded-sm'>
+                <div className='p-2 hover:bg-black/5 transition-all duration-100 rounded-sm'>
                     <GoDownload size={20} />
                 </div>
             </div>

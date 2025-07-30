@@ -3,6 +3,7 @@ import Sidebar from '../components/Sidebar'
 import Overview from './../components/dashboard/Overview'
 import DB_List_Card from '../components/dashboard/DB_List_Card'
 import { GoUpload, GoFile, GoShieldCheck, GoXCircle, GoClock, GoX } from 'react-icons/go'
+import { AiOutlineMenu } from 'react-icons/ai';
 
 // Sample data
 const list = [
@@ -10,14 +11,13 @@ const list = [
     { fileName: "Pan Card", type: "Personal", size: "3.6MB", date: "22/07/25", status: "Pending" },
     { fileName: "Driving License", type: "Personal", size: "3.3MB", date: "12/07/25", status: "Verified" },
     { fileName: "10th Marksheet", type: "Personal", size: "4.5MB", date: "20/07/25", status: "Failed" },
-    { fileName: "10th Marksheet", type: "Personal", size: "4.5MB", date: "20/07/25", status: "Failed" },
-    { fileName: "10th Marksheet", type: "Personal", size: "4.5MB", date: "20/07/25", status: "Failed" },
 ]
 
 function Dashboard() {
     const [isUploading, setIsUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState("");
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const handleUploadClick = () => {
         setIsUploading(true);
@@ -44,19 +44,37 @@ function Dashboard() {
         }
     };
 
+
     return (
         <div className="relative flex min-h-screen border border-transparent" style={{ fontFamily: 'montserrat' }}>
-            <div className="fixed top-0 left-0 h-screen w-[240px] z-30">
-                <Sidebar />
-            </div>
-            <div className="ml-[240px] mt-24 w-full flex flex-col">
-                <div className='w-full px-9'>
-                    <h1 className='text-3xl text-black font-bold' style={{ fontFamily: "montserrat" }}>Dashboard</h1>
+            <div className="relative">
+                {/* Hamburger + Close Icons */}
+                <div className="md:hidden fixed top-19 left-5 z-40">
+                    {!isSidebarOpen ? (
+                        <AiOutlineMenu
+                            size={26}
+                            className="cursor-pointer border border-black/30 rounded-md p-1 bg-white"
+                            onClick={() => setIsSidebarOpen(true)}
+                        />
+                    ) : (
+                        <GoX
+                            size={26}
+                            className="cursor-pointer border border-black/30 rounded-md p-1 bg-white"
+                            onClick={() => setIsSidebarOpen(false)}
+                        />
+                    )}
                 </div>
 
+                {/* Sidebar (controlled by state) */}
+                <Sidebar isOpen={isSidebarOpen} />
+            </div>
+            <div className="md:ml-[240px] mt-28 md:mt-24 w-full flex flex-col">
+                <div className='w-full md:px-9 px-4'>
+                    <h1 className='text-3xl text-black font-bold' style={{ fontFamily: "montserrat" }}>Dashboard</h1>
+                </div>
                 <div>
                     {/* Overview section */}
-                    <div className="w-full flex justify-between px-10 py-8 gap-6">
+                    <div className="w-full flex flex-col lg:flex-row justify-between px-4 md:px-10 py-4 md:py-8 gap-3 md:gap-6">
                         <Overview title="Total Documents" num="5" logo={<GoFile size={34} />} />
                         <Overview title="Verified" num="3" logo={<GoShieldCheck size={34} />} />
                         <Overview title="Pending" num="1" logo={<GoClock size={34} />} />
@@ -64,7 +82,7 @@ function Dashboard() {
                     </div>
 
                     {/* Upload Button */}
-                    <div className="w-full px-10 py-2">
+                    <div className="w-full px-4 mt-4 md:mt-0 md:px-10 py-2">
                         <button
                             className="flex gap-2 items-center justify-center py-3 hover:shadow-lg transition-all duration-200 rounded-md border border-black/15 max-w-[170px] w-full bg-white cursor-pointer"
                             onClick={handleUploadClick}
@@ -75,7 +93,7 @@ function Dashboard() {
 
                         {/* Overlay Popup */}
                         <div
-                            className={`fixed inset-0 flex items-center justify-center bg-black/50 bg-opacity-50 transition-opacity duration-300 ${isUploading ? "opacity-100 visible z-30" : "opacity-0 invisible"
+                            className={`fixed h-screen inset-0 flex items-center justify-center bg-black/50 bg-opacity-50 transition-opacity duration-300 ${isUploading ? "opacity-100 visible z-30" : "opacity-0 invisible"
                                 }`}
                         >
                             <div
@@ -149,7 +167,7 @@ function Dashboard() {
                     </div>
 
                     {/* Document List */}
-                    <div className="w-full gap-6 my-8 flex flex-col justify-center">
+                    <div className="w-full gap-4 md:gap-6 px-4 md:px-10 my-8 flex flex-col justify-center">
                         {list.map((item, index) => (
                             <DB_List_Card
                                 key={index}
