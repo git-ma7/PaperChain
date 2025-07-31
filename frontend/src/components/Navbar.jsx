@@ -22,10 +22,10 @@ function Navbar() {
                 }
             </div>
             <div className='w-full'>
-                <h1 className='text-2xl font-bold w-fit' style={{ fontFamily: "montserrat" }}>PaperChain</h1>
+                <Link to={'/'} className='text-2xl font-[800] w-fit tracking-wider' style={{ fontFamily: "CaviarDreams" }}>PaperChain</Link>
             </div>
             <div className={`w-full h-fit md:flex items-center justify-end gap-6 mt-4 md:mt-0 py-2 md:py-0 ${isMenuOpen ? 'block' : 'hidden'}`}>
-                <div className={`flex items-center justify-center gap-4 ${isMenuOpen ? 'flex-col items-start' : ''}`}>
+                <div className={`flex text-lg items-center justify-center gap-4 ${isMenuOpen ? 'flex-col items-start' : ''}`} style={{fontFamily:"Syne"}}>
                     <Link className='relative cursor-pointer font-medium after:hidden after:rounded-full md:after:block after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[1.5px] after:bg-black after:transition-all after:duration-300 hover:after:w-full' to={'/'}>Home</Link>
                     <Link className='relative cursor-pointer font-medium after:hidden after:rounded-full md:after:block after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[1.5px] after:bg-black after:transition-all after:duration-300 hover:after:w-full' to={'/dashboard'}>Dashboard</Link>
                     <Link className='relative block md:hidden cursor-pointer font-medium after:hidden after:rounded-full md:after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[1.5px] after:bg-black after:transition-all after:duration-300 hover:after:w-full' to={'/profile'}>Profile</Link>

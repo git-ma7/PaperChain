@@ -56,13 +56,11 @@
     src: url('/src/assets/fonts/quicksand/Quicksand_Book.otf') format('truetype');
 }
 
-.sidebar-li:hover{
-    background-color: #bcbcbc75;
+@font-face {
+    font-family: 'Exodus';
+    src: url('/src/assets/fonts/exodus/Exodus\ -\ Personal\ Use/ExodusDemo-Sharpen.otf') format('truetype');
 }
 
-.sidebar-li.active{
-    background-color: #bcbcbc75;
-}
 
 .normal{
     background-color: #7905df48;
