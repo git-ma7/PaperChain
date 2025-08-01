@@ -82,6 +82,16 @@
     color: #ff4740;
 }
 
+.powered-by {
+    border: 1px solid transparent;
+    background-image: linear-gradient(white, white),
+        linear-gradient(90deg, rgba(255, 0, 150, 1), rgba(0, 204, 255, 1), rgba(0, 255, 150, 1));
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14);
+    transition: border 0.3s ease;
+}
+
 @layer utilities {
     @keyframes blobMove1 {
 
