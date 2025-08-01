@@ -4,7 +4,6 @@ import Dashboard from "./pages/Dashboard";
 import Verify from "./pages/Verify";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
-import ZoomScaler from './components/ZoomScaler';
 import Navbar from "./components/Navbar";
 
 // Wrapper to use useLocation inside Router
@@ -12,7 +11,6 @@ function AppWrapper() {
 
   return (
     <div className="relative">
-      <ZoomScaler />
       <Navbar/>
       <div className="fixed h-screen inset-0 -z-10 flex items-center justify-center">
         <div className='absolute md:block -z-20 top-2/4 md:top-1/3 left-1/3 md:left-1/4 w-[150px] h-[150px] md:w-[300px] md:h-[300px] blur-xl rounded-full md:blur-3xl bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 animate-blob-1 opacity-40 '></div>
