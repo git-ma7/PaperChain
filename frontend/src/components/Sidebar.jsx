@@ -51,8 +51,7 @@ function Sidebar({ name, email }) {
                     flex flex-col justify-between
                     transform transition-transform duration-300 ease-in-out
                     ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-                    md:translate-x-0
-                `}
+                    md:translate-x-0 md:sticky md:h-screen w-full`}
                 style={{ fontFamily: "montserrat" }}
             >
                 <div className='flex flex-col justify-between h-[90vh] md:h-[92vh]'>

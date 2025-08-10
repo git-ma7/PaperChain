@@ -5,6 +5,7 @@ import Verify from "./pages/Verify";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 // Wrapper to use useLocation inside Router
 function AppWrapper() {
@@ -24,6 +25,7 @@ function AppWrapper() {
         <Route path="/login" element={<Login />} />
         {/* Add other routes as needed */}
       </Routes>
+      <Footer/>
     </div>
   );
 }

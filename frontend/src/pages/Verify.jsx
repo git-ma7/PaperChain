@@ -8,7 +8,7 @@ function Verify() {
             {/* Sidebar */}
             <Sidebar name="Travis Scott" email="fein@gmail.com" />
 
-            <div className="md:ml-[250px] mt-28 md:mt-26 w-full flex flex-col">
+            <div className="mt-28 md:mt-26 w-full flex flex-col">
                 <div className='w-full md:px-9 px-4' style={{ fontFamily: 'Syne' }}>
                     <h1 className='text-4xl tracking-wide text-black font-extrabold'>Verify</h1>
                 </div>
