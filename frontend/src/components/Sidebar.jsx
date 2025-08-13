@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { GoHome, GoFileDirectory, GoVerified, GoX } from 'react-icons/go';
+import { GoHome, GoFileDirectory, GoVerified, GoX, GoPerson } from 'react-icons/go';
 import { AiOutlineMenu } from 'react-icons/ai';
 import AvatarGenerator from './AvatarGenerator';
 
@@ -77,6 +77,12 @@ function Sidebar({ name, email }) {
                                     }`}>
                                 <GoVerified size={20} />
                                 <Link className="w-full" to="/verify">Verify</Link>
+                            </li>
+                            <li
+                                className={`flex gap-2 items-center sidebar-li p-2 rounded-lg transition-all duration-150 ease-in-out ${location.pathname === '/profile' ? 'bg-black text-white font-medium' : 'hover:bg-black hover:text-white'
+                                    }`}>
+                                <GoPerson size={20} />
+                                <Link className="w-full" to="/profile">Profile</Link>
                             </li>
                         </ul>
                     </nav>
