@@ -29,6 +29,7 @@ function Navbar() {
                     <Link className='w-full relative cursor-pointer font-medium after:hidden after:rounded-full md:after:block after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[1.5px] after:bg-black after:transition-all after:duration-300 hover:after:w-full' to={'/'}>Home</Link>
                     <Link className='w-full relative cursor-pointer font-medium after:hidden after:rounded-full md:after:block after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[1.5px] after:bg-black after:transition-all after:duration-300 hover:after:w-full' to={'/dashboard'}>Dashboard</Link>
                     <Link className='w-full relative block md:hidden cursor-pointer font-medium after:hidden after:rounded-full md:after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[1.5px] after:bg-black after:transition-all after:duration-300 hover:after:w-full' to={'/profile'}>Profile</Link>
+                    <Link className='w-full relative cursor-pointer font-medium after:hidden after:rounded-full md:after:block after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[1.5px] after:bg-black after:transition-all after:duration-300 hover:after:w-full' to={'/login'}>Login</Link>
                 </div>
                 <div className='hidden md:block p-2 border rounded-full border-black/50 ' id='profile'>
                     <Link to={'/profile'}><GoPerson size={20}/></Link>
