@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { GoHome, GoFileDirectory, GoVerified, GoX, GoPerson } from 'react-icons/go';
+import { GoHome, GoX, GoPerson } from 'react-icons/go';
+import {MdHowToVote} from 'react-icons/md';
 import { AiOutlineMenu } from 'react-icons/ai';
 import AvatarGenerator from './AvatarGenerator';
 
@@ -64,20 +65,14 @@ function Sidebar({ name, email }) {
                                 <GoHome size={20} />
                                 <Link className="w-full" to="/dashboard">Dashboard</Link>
                             </li>
-                            {/* My Documents */}
+                            {/* Voting */}
                             <li
-                                className={`flex gap-2 items-center sidebar-li p-2 rounded-lg transition-all duration-150 ease-in-out ${location.pathname === '/mydocs' ? 'bg-black text-white font-medium' : 'hover:bg-black hover:text-white'
+                                className={`flex gap-2 items-center sidebar-li p-2 rounded-lg transition-all duration-150 ease-in-out ${location.pathname === '/voting' ? 'bg-black text-white font-medium' : 'hover:bg-black hover:text-white'
                                     }`}>
-                                <GoFileDirectory size={20} />
-                                <Link className="w-full" to="/mydocs">My Documents</Link>
+                                <MdHowToVote size={22} />
+                                <Link className="w-full" to="/voting">Voting</Link>
                             </li>
-                            {/* Verify */}
-                            <li
-                                className={`flex gap-2 items-center sidebar-li p-2 rounded-lg transition-all duration-150 ease-in-out ${location.pathname === '/verify' ? 'bg-black text-white font-medium' : 'hover:bg-black hover:text-white'
-                                    }`}>
-                                <GoVerified size={20} />
-                                <Link className="w-full" to="/verify">Verify</Link>
-                            </li>
+                            {/* Profile */}
                             <li
                                 className={`flex gap-2 items-center sidebar-li p-2 rounded-lg transition-all duration-150 ease-in-out ${location.pathname === '/profile' ? 'bg-black text-white font-medium' : 'hover:bg-black hover:text-white'
                                     }`}>

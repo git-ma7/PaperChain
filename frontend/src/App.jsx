@@ -1,8 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
-import Verify from "./pages/Verify";
-import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -22,9 +20,7 @@ function AppWrapper() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/verify" element={<Verify />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/login" element={<Login />} />
         {/* Add other routes as needed */}
       </Routes>
       <Footer/>
