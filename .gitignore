@@ -2,6 +2,7 @@ env/
 frontend/node_modules/
 moralis-acc.txt
 blocks.txt
+Inspiration.webp
 
 smart_contracts/node_modules
 smart_contracts/.env
