@@ -38,8 +38,8 @@ class RequestChallenge(APIView):
             'address': address,
             'statement': 'Do you want to connect to PaperChain?',
             'uri': 'https://paperchain.dapp/',
-            'expirationTime': (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=2)).isoformat().replace('+00:00', 'Z'),
-            'notBefore': datetime.datetime.now().isoformat().__add__('Z'),
+            # 'expirationTime': (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=2)).isoformat().replace('+00:00', 'Z'),
+            # 'notBefore': datetime.datetime.now().isoformat().__add__('Z'),
             'resources': ["https://docs.moralis.io/"],
             'timeout': 120  # Timeout in seconds`
         }
