@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { GoHome, GoX, GoPerson } from 'react-icons/go';
-import {MdHowToVote} from 'react-icons/md';
+import { GoHome, GoX, GoNote } from 'react-icons/go';
+import { MdHowToVote } from 'react-icons/md';
 import { AiOutlineMenu } from 'react-icons/ai';
-import AvatarGenerator from './AvatarGenerator';
+import { useAuth } from './AuthContext';
 
-function Sidebar({ name, email }) {
+function Sidebar() {
     const [isOpen, setIsOpen] = useState(false);
     const location = useLocation();
 
+    // Simulated user role (remove this once you have actual user role logic)
+    const {user} = useAuth(); // 'Admin' or 'User' or 'Unknown'
+    
     // Automatically open sidebar on large screens
     useEffect(() => {
         const handleResize = () => {
@@ -19,7 +22,7 @@ function Sidebar({ name, email }) {
             }
         };
 
-        handleResize(); // initial check
+        handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -52,49 +55,52 @@ function Sidebar({ name, email }) {
                     flex flex-col justify-between
                     transform transition-transform duration-300 ease-in-out
                     ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-                    md:translate-x-0 md:sticky md:h-screen w-full`}
+                    md:translate-x-0 md:sticky md:h-screen w-full
+                    overflow-y-auto custom-scrollbar
+                `}
                 style={{ fontFamily: "montserrat" }}
             >
                 <div className='flex flex-col justify-between h-[90vh] md:h-[92vh]'>
                     <nav className="w-full mt-10">
                         <ul className="flex flex-col px-4 gap-3">
+
                             {/* Dashboard */}
                             <li
-                                className={`flex gap-2 items-center sidebar-li p-2 rounded-lg transition-all duration-150 ease-in-out ${location.pathname === '/dashboard' ? 'bg-black text-white font-medium' : 'hover:bg-black hover:text-white'
-                                    }`}>
+                                className={`flex gap-2 items-center sidebar-li p-2 rounded-lg transition-all duration-150 ease-in-out ${location.pathname === '/dashboard'
+                                        ? 'bg-black text-white font-medium'
+                                        : 'hover:bg-black hover:text-white'
+                                    }`}
+                            >
                                 <GoHome size={20} />
                                 <Link className="w-full" to="/dashboard">Dashboard</Link>
                             </li>
+
                             {/* Voting */}
                             <li
-                                className={`flex gap-2 items-center sidebar-li p-2 rounded-lg transition-all duration-150 ease-in-out ${location.pathname === '/voting' ? 'bg-black text-white font-medium' : 'hover:bg-black hover:text-white'
-                                    }`}>
+                                className={`flex gap-2 items-center sidebar-li p-2 rounded-lg transition-all duration-150 ease-in-out ${location.pathname === '/vote'
+                                        ? 'bg-black text-white font-medium'
+                                        : 'hover:bg-black hover:text-white'
+                                    }`}
+                            >
                                 <MdHowToVote size={22} />
-                                <Link className="w-full" to="/voting">Voting</Link>
+                                <Link className="w-full" to="/vote">Voting</Link>
                             </li>
-                            {/* Profile */}
+
+                            {/* Notice */}
                             <li
-                                className={`flex gap-2 items-center sidebar-li p-2 rounded-lg transition-all duration-150 ease-in-out ${location.pathname === '/profile' ? 'bg-black text-white font-medium' : 'hover:bg-black hover:text-white'
-                                    }`}>
-                                <GoPerson size={20} />
-                                <Link className="w-full" to="/profile">Profile</Link>
+                                className={`flex gap-2 items-center sidebar-li p-2 rounded-lg transition-all duration-150 ease-in-out ${location.pathname === '/notice' || location.pathname === '/notice-admin'
+                                        ? 'bg-black text-white font-medium'
+                                        : 'hover:bg-black hover:text-white'
+                                    }`}
+                            >
+                                <GoNote size={22} />
+                                <Link className="w-full" to={user?.role === 'Unknown' ? '/notice-admin' : '/notice'}>
+                                    Notice
+                                </Link>
                             </li>
+
                         </ul>
                     </nav>
-
-                    {/* User Footer */}
-                    <div className="flex flex-col w-full gap-4 py-4 px-4">
-                        <div className="flex items-center gap-4">
-                            <AvatarGenerator className="w-[42px] h-[42px]" name={name || 'Travis Scott'} />
-                            <div className="flex flex-col">
-                                <span>{name || 'Travis'}</span>
-                                <span className="text-sm text-gray-500">{email || 'fein@gmail.com'}</span>
-                            </div>
-                        </div>
-                        <button className="w-full bg-red-500 text-white px-6 py-2 rounded-lg mt-2">
-                            Logout
-                        </button>
-                    </div>
                 </div>
             </aside>
         </>

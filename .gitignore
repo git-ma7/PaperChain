@@ -4,6 +4,13 @@ moralis-acc.txt
 blocks.txt
 Inspiration.webp
 
+backend/backend/DocumentRegistry.json
+backend/backend/IDocumentRegistry.json
+backend/backend/ShareholderRegistry.json
+backend/backend/IShareholderRegistry.json
+backend/backend/ElectionManager.json
+backend/backend/RoleIdentifier.json
+
 smart_contracts/node_modules
 smart_contracts/.env
 

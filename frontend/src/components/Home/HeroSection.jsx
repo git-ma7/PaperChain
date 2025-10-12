@@ -16,16 +16,6 @@ function HeroSection() {
               Immutable, transaparent, and instantly verifiable credentials on the blockchain.
             </p>
         </div>
-        <div className='w-full flex flex-col md:flex-row items-center justify-center gap-2 px-4 md:gap-8'>
-          <button className='w-full flex gap-2 items-center justify-center border border-black/20 rounded-md py-2 backdrop-blur-xl bg-white/70 md:w-[205px] hover:shadow-md transition-all duration-500 cursor-pointer'>
-            <GoUpload />
-            Upload Document
-          </button>
-          <button className='w-full flex gap-2 items-center justify-center border border-transparent rounded-md py-2 backdrop-blur-xl bg-black text-white md:w-[205px] hover:shadow-md transition-all duration-500 cursor-pointer'>
-            <GoEye />
-            Verify Now
-          </button>
-        </div>
     </div>
   )
 }

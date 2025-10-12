@@ -1,17 +1,15 @@
 import Sidebar from '../components/Sidebar';
 import DB_List_Card from '../components/dashboard/DB_List_Card';
-import { GoUpload, GoFile, GoX } from 'react-icons/go';
 
 // Sample data
 const list = [
     { fileName: "Board Of Directors", date: "15/07/25", status: "Voted" },
     { fileName: "Contract Mergers", date: "22/07/25", status: "NOTA" },
-    { fileName: "Board Of Directors", date: "12/07/25", status: "Voted" },
-    { fileName: "Contract Mergers", date: "20/07/25", status: "NOTA" },
+    { fileName: "Board Of Directors", date: "12/08/25", status: "Voted" },
+    { fileName: "Contract Mergers", date: "20/08/25", status: "NOTA" },
 ];
 
 function Dashboard() {
-
 
     return (
         <div className="relative flex min-h-screen border border-transparent" style={{ fontFamily: 'montserrat' }}>

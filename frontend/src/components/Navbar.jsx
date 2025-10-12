@@ -1,69 +1,12 @@
 import React, { useState } from 'react';
-import AvatarGenerator from './AvatarGenerator';
-import { GoPerson } from 'react-icons/go';
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
-import { useConnect, useAccount, useSignMessage, useDisconnect } from 'wagmi';
+import { useAuth } from './AuthContext';
 
 function Navbar() {
-    const { connectAsync, connectors } = useConnect();
-    const { disconnectAsync } = useDisconnect();
-    const { isConnected } = useAccount();
-    const { signMessageAsync } = useSignMessage();
-    const [profile, setProfile] = useState(null);
+    const { user, login, logout } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-    // Function to handle MetaMask login
-    async function login() {
-        try {
-            if (isConnected) {
-                await disconnectAsync();
-            }
-
-            const metaMaskConnector = connectors.find(c => c.id === 'metaMaskSDK');
-            if (!metaMaskConnector) {
-                alert('MetaMask connector not found! Please make sure MetaMask is installed.');
-                return;
-            }
-
-            const result = await connectAsync({ connector: metaMaskConnector });
-            const account = result.accounts[0];
-            const chainId = result.chainId;
-
-            const { data } = await axios.post('http://localhost:8000/auth/request-challenge/', {
-                address: account,
-                chain: String(chainId),
-                network: 'evm',
-            });
-
-            const message = data.message;
-            const signature = await signMessageAsync({ message });
-
-            const verification = await axios.post('http://localhost:8000/auth/verify/', {
-                message,
-                signature,
-            });
-
-            setProfile(verification.data);
-            alert('✅ Successfully logged in with MetaMask!');
-        } catch (err) {
-            console.error('Login failed:', err);
-            alert('❌ Login failed. Please try again.');
-        }
-    }
-
-    // Logout handler
-    const handleLogout = async () => {
-        try {
-            await disconnectAsync();
-            setProfile(null);
-            alert('🚪 Logged out successfully.');
-        } catch (err) {
-            console.error('Logout failed:', err);
-            alert('❌ Error while logging out.');
-        }
-    };
 
     // Toggle for mobile menu
     const toggleMenu = () => {
@@ -127,15 +70,9 @@ function Navbar() {
                         >
                             Dashboard
                         </Link>
-                        <Link
-                            className="w-full relative block md:hidden cursor-pointer font-medium after:hidden after:rounded-full md:after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[1.5px] after:bg-black after:transition-all after:duration-300 hover:after:w-full"
-                            to="/profile"
-                        >
-                            Profile
-                        </Link>
 
                         {/* Login/Logout Button */}
-                        {!profile ? (
+                        {!user ? (
                             <button
                                 onClick={login}
                                 className="px-4 py-1 border border-black rounded-md hover:bg-black hover:text-white cursor-pointer transition-all duration-300"
@@ -144,20 +81,13 @@ function Navbar() {
                             </button>
                         ) : (
                             <button
-                                onClick={handleLogout}
+                                onClick={logout}
                                 className="px-4 py-1 border border-red-400 rounded-md bg-red-400 hover:bg-red-500 text-white cursor-pointer transition-all duration-300"
                             >
                                 Logout
                             </button>
                         )}
                     </div>
-                </div>
-
-                {/* Profile Icon (Visible on larger screens) */}
-                <div className="hidden md:block p-2 border rounded-full border-black/50" id="profile">
-                    <Link to="/profile">
-                        <GoPerson size={20} />
-                    </Link>
                 </div>
             </div>
         </div>
