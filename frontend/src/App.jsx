@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Vote from "./pages/Vote";
 import Notice from "./pages/Notice";
+import BOD from "./pages/bod";
 import NoticeAdmin from "./pages/NoticeAdmin";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -24,6 +25,7 @@ function AppWrapper() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/vote" element={<Vote />} />
         <Route path="/notice" element={<Notice />} />
+        <Route path="/bod" element={<BOD />} />
         <Route
           path="/notice-admin"
           element={

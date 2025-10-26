@@ -4,9 +4,9 @@ import DB_List_Card from '../components/dashboard/DB_List_Card';
 // Sample data
 const list = [
     { fileName: "Board Of Directors", date: "15/07/25", status: "Voted" },
-    { fileName: "Contract Mergers", date: "22/07/25", status: "NOTA" },
+    { fileName: "Contract Mergers", date: "22/07/25", status: "Voted" },
     { fileName: "Board Of Directors", date: "12/08/25", status: "Voted" },
-    { fileName: "Contract Mergers", date: "20/08/25", status: "NOTA" },
+    { fileName: "Contract Mergers", date: "20/08/25", status: "Voted" },
 ];
 
 function Dashboard() {
