@@ -6,7 +6,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Vote from "./pages/Vote";
 import Notice from "./pages/Notice";
-import BOD from "./pages/bod";
+import BOD from "./pages/BOD";
 import NoticeAdmin from "./pages/NoticeAdmin";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -29,9 +29,10 @@ function AppWrapper() {
         <Route
           path="/notice-admin"
           element={
-            <ProtectedRoute allowedRoles={["Unknown"]}>
-              <NoticeAdmin />
-            </ProtectedRoute>
+            // <ProtectedRoute allowedRoles={["Unknown"]}>
+            //   <NoticeAdmin />
+            // </ProtectedRoute>
+            <NoticeAdmin />
           }
         />
         {/* Add other routes as needed */}

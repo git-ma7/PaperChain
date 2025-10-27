@@ -8,6 +8,7 @@ from moralis import auth
 import re
 import json
 from web3 import Web3
+import requests
 import jwt, secrets, time
 from pathlib import Path
 
@@ -111,3 +112,20 @@ class VerifyChallenge(APIView):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+@method_decorator(csrf_exempt,name='dispatch')
+class IPFSStorage(APIView):
+    def post(self,request,format=None):
+        try:
+            uploaded_file = request.FILES.get('file')
+            if not uploaded_file:
+                return Response('No file uploaded',
+                                status=status.HTTP_400_BAD_REQUEST)
+            
+            files = { 'file': (uploaded_file.name, uploaded_file, uploaded_file.content_type)}
+            res = requests.post("http://127.0.0.1:5001/api/v0/add",files=files)
+            return Response({res},status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response(str(e),
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)

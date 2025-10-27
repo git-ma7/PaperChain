@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import { GoDownload } from 'react-icons/go';
 import { IoDocument } from 'react-icons/io5';
 import { AiFillFileImage, AiOutlineClose } from 'react-icons/ai';
 
 function Notice() {
-    const [isUploading, setIsUploading] = useState(false); // Default should be false, not true
+    const [isUploading, setIsUploading] = useState(false); 
+    const [file,setFile] = useState(null);
+
 
     const handleUploadClick = () => {
         setIsUploading(true);
@@ -14,6 +17,31 @@ function Notice() {
     const handleCloseClick = () => {
         setIsUploading(false);
     };
+
+    const handleFileChange = (e) => {
+        setFile(e.target.files[0]);
+    }
+
+    const upload = async(e) => {
+        e.preventDefault();
+        if (!file){
+            alert("Select a file first");
+            return;
+        }
+        const formData = new FormData();
+        formData.append('file',file);
+
+        try{
+            const res = await axios.post("http://localhost:8000/docs/upload",formData,{
+                headers:{ 'Content-Type': 'multipart/form-data' },
+            });
+            alert("Upload successfull");
+            console.log(res);
+        }catch(err){
+            console.log(err);
+            alert("Upload failed");
+        }
+    }
 
     return (
         <div
@@ -68,7 +96,7 @@ function Notice() {
                             </h1>
                             <div className="mt-3 w-full px-4 sm:px-2 flex flex-col items-center justify-center">
                                 <div className="relative w-full mx-auto my-3">
-                                    <input id="file-upload" type="file" className="hidden" />
+                                    <input id="file-upload" type="file" className="hidden" onChange={handleFileChange}/>
                                     <label
                                         htmlFor="file-upload"
                                         className="group flex flex-col justify-center items-center w-full h-28 sm:h-40 border-2 border-dashed border-black rounded-md cursor-pointer transition-all duration-300 hover:border-gray-700 focus-within:border-gray-700"
@@ -92,6 +120,7 @@ function Notice() {
 
                                 <button
                                     type="button"
+                                    onClick={upload}
                                     className="relative cursor-pointer w-full border border-black text-sm my-2 py-2 px-6 md:px-2 rounded-sm text-center transition-all duration-500 text-black group hover:bg-black hover:text-white"
                                 >
                                     <span className="absolute inset-0 border-2 border-black rounded-md transition-transform duration-500 transform scale-0 group-hover:scale-100"></span>
