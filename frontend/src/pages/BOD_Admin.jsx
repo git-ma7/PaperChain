@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import Sidebar from "../components/Sidebar";
+import axios from "axios";
 
 function BOD_Admin() {
     const [candidatesData, setCandidatesData] = useState(null);
     const [votersData, setVotersData] = useState(null);
+    const [candidateFile,setCandidateFile] = useState(null);
+    const [votersFile,setVotersFile] = useState(null);
     const [uploaded, setUploaded] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
@@ -45,7 +48,7 @@ function BOD_Admin() {
     };
 
     // ✅ Handle Upload Button
-    const handleUpload = (e) => {
+    const handleUpload = async (e) => {
         e.preventDefault();
 
         if (!candidatesData || !votersData) {
@@ -53,10 +56,27 @@ function BOD_Admin() {
             setMessage("");
             return;
         }
-        setUploaded(true);
-        setError("");
-        setMessage("Files uploaded successfully. You can now start elections.");
 
+        const formData1 = new FormData();
+        formData1.append('file',candidateFile);
+        const formData2 = new FormData();
+        formData2.append('file',votersFile);
+
+        try{
+            const res1 = await axios.post("http://localhost:8000/docs/upload",formData1,{
+                headers:{ 'Content-Type': 'multipart/form-data' },
+            });
+            const res2 = await axios.post("http://localhost:8000/docs/upload",formData2,{
+                headers:{ 'Content-Type': 'multipart/form-data' },
+            });
+            console.log(res1,res2);
+            setUploaded(true);
+            setError("");
+            setMessage("Files uploaded successfully. You can now start elections.");
+        }catch(err){
+            console.log(err);
+            alert("Upload failed");
+        }
     };
 
     // ✅ Start/Stop Elections
@@ -143,6 +163,7 @@ function BOD_Admin() {
                                             className="hidden"
                                             onChange={(e) => {
                                                 const file = e.target.files[0];
+                                                setCandidateFile(file);
                                                 handleFileUpload(file, setCandidatesData);
                                             }}
                                         />
@@ -171,7 +192,10 @@ function BOD_Admin() {
                                         <button
                                             type="button"
                                             className="text-red-600 font-semibold hover:underline"
-                                            onClick={() => setCandidatesData(null)}
+                                            onClick={() => {
+                                                setCandidateFile(null);
+                                                setCandidatesData(null);}
+                                            }
                                         >
                                             Remove
                                         </button>
@@ -192,6 +216,7 @@ function BOD_Admin() {
                                             className="hidden"
                                             onChange={(e) => {
                                                 const file = e.target.files[0];
+                                                setVotersFile(file);
                                                 handleFileUpload(file, setVotersData);
                                             }}
                                         />
@@ -220,7 +245,10 @@ function BOD_Admin() {
                                         <button
                                             type="button"
                                             className="text-red-600 font-semibold hover:underline"
-                                            onClick={() => setVotersData(null)}
+                                            onClick={() => {
+                                                setVotersFile(null);
+                                                setVotersData(null);}
+                                            }
                                         >
                                             Remove
                                         </button>
