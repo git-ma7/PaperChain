@@ -8,6 +8,7 @@ import Vote from "./pages/Vote";
 import Notice from "./pages/Notice";
 import BOD from "./pages/BOD";
 import NoticeAdmin from "./pages/NoticeAdmin";
+import BOD_Admin from "./pages/BOD_Admin";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Wrapper to use useLocation inside Router
@@ -26,6 +27,7 @@ function AppWrapper() {
         <Route path="/vote" element={<Vote />} />
         <Route path="/notice" element={<Notice />} />
         <Route path="/bod" element={<BOD />} />
+        <Route path="/bod-admin" element={<BOD_Admin />} />
         <Route
           path="/notice-admin"
           element={
