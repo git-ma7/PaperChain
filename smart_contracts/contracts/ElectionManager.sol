@@ -9,21 +9,23 @@ interface IDocumentRegistry {
     function registerDocument(bytes32 docHash, string calldata uri) external;
 }
 
-/// @title Election Manager (simple weighted-vote election)
-/// @notice Owner creates elections; shareholders vote once per election with weight = shares.
-/// @dev Votes are not encrypted on-chain here; store sensitive encrypted ballots off-chain and only
-///      record final tallies or proofs on-chain if you need privacy in real deployment.
+/// @title Election Manager (weighted voting by shareholders)
+/// @notice Owner creates elections, starts/ends them, and each shareholder can vote once with weight = shares.
 contract ElectionManager {
     address public owner;
     IShareholderRegistry public registry;
     IDocumentRegistry public docRegistry;
 
     uint256 public electionCount;
+    uint256 public globalCandidateCount;
+
+    enum ElectionStatus { NotStarted, Ongoing, Ended }
 
     struct Candidate {
         uint256 id;
         string name;
-        string docURI; // manifesto location (IPFS)
+        address wallet;
+        string docURI; // optional (e.g., IPFS URI for manifesto or profile)
     }
 
     struct Election {
@@ -35,13 +37,21 @@ contract ElectionManager {
         uint256 candidateCount;
         mapping(uint256 => Candidate) candidates;
         mapping(uint256 => uint256) votes; // candidateId => total weighted votes
-        mapping(address => bool) hasVoted; // prevents multiple votes
+        mapping(address => bool) hasVoted;
+        ElectionStatus status;
     }
 
     // electionId => Election
     mapping(uint256 => Election) private elections;
 
+    // Global candidate registry (bulk import)
+    mapping(address => Candidate) public allCandidates;
+
+    // Events
+    event CandidateRegistered(address indexed wallet, string name, uint256 indexed candidateId);
+    event BulkCandidatesRegistered(uint256 count);
     event ElectionCreated(uint256 indexed electionId, string title, uint256 startTime, uint256 endTime);
+    event ElectionStarted(uint256 indexed electionId, uint256 startTimestamp);
     event VoteCast(uint256 indexed electionId, uint256 indexed candidateId, address indexed voter, uint256 weight);
     event ElectionEnded(uint256 indexed electionId);
 
@@ -56,7 +66,86 @@ contract ElectionManager {
         docRegistry = IDocumentRegistry(documentRegistryAddress);
     }
 
-    /// @notice Create an election with candidate names and docURIs (arrays must match)
+    // ---------------------------------------------------------------------
+    // 🧩 CANDIDATE REGISTRATION
+    // ---------------------------------------------------------------------
+
+    /// @notice Register candidates in bulk (for Excel import)
+    /// @dev Takes arrays of candidate names and wallet addresses
+    function bulkRegisterCandidates(
+        string[] calldata names,
+        address[] calldata wallets
+    ) external onlyOwner {
+        require(names.length == wallets.length, "array length mismatch");
+
+        for (uint256 i = 0; i < wallets.length; i++) {
+            address w = wallets[i];
+            require(w != address(0), "zero address");
+            require(bytes(names[i]).length > 0, "empty name");
+            require(allCandidates[w].wallet == address(0), "already registered");
+
+            globalCandidateCount++;
+            allCandidates[w] = Candidate({
+                id: globalCandidateCount,
+                name: names[i],
+                wallet: w,
+                docURI: ""
+            });
+
+            emit CandidateRegistered(w, names[i], globalCandidateCount);
+        }
+
+        emit BulkCandidatesRegistered(wallets.length);
+    }
+
+    /// @notice Get details of a registered candidate (global)
+    function getRegisteredCandidate(address wallet)
+        external
+        view
+        returns (string memory name, uint256 id, address walletAddr, string memory docURI)
+    {
+        Candidate memory c = allCandidates[wallet];
+        return (c.name, c.id, c.wallet, c.docURI);
+    }
+
+    // ---------------------------------------------------------------------
+    // 🧩 ELECTION CREATION
+    // ---------------------------------------------------------------------
+
+    /// @notice Create an election from registered candidates
+    function createElectionFromRegisteredCandidates(
+        string calldata title,
+        address[] calldata candidateWallets,
+        uint256 startTime,
+        uint256 endTime
+    ) external onlyOwner returns (uint256) {
+        require(candidateWallets.length > 0, "need candidates");
+        require(startTime < endTime, "invalid times");
+
+        electionCount++;
+        uint256 eid = electionCount;
+        Election storage e = elections[eid];
+        e.id = eid;
+        e.title = title;
+        e.startTime = startTime;
+        e.endTime = endTime;
+        e.status = ElectionStatus.NotStarted;
+
+        for (uint256 i = 0; i < candidateWallets.length; i++) {
+            address cw = candidateWallets[i];
+            Candidate memory c = allCandidates[cw];
+            require(c.wallet != address(0), "candidate not registered");
+
+            uint256 cid = i + 1;
+            e.candidates[cid] = c;
+            e.candidateCount++;
+        }
+
+        emit ElectionCreated(eid, title, startTime, endTime);
+        return eid;
+    }
+
+    /// @notice Create a new election manually (without using registered candidates)
     function createElection(
         string calldata title,
         string[] calldata candidateNames,
@@ -68,7 +157,7 @@ contract ElectionManager {
         require(candidateNames.length == candidateDocURIs.length, "length mismatch");
         require(startTime < endTime, "invalid times");
 
-        electionCount += 1;
+        electionCount++;
         uint256 eid = electionCount;
 
         Election storage e = elections[eid];
@@ -77,23 +166,41 @@ contract ElectionManager {
         e.startTime = startTime;
         e.endTime = endTime;
         e.ended = false;
-        e.candidateCount = 0;
+        e.status = ElectionStatus.NotStarted;
 
         for (uint256 i = 0; i < candidateNames.length; i++) {
-            uint256 cid = i + 1; // candidate IDs start at 1
-            e.candidates[cid] = Candidate({id: cid, name: candidateNames[i], docURI: candidateDocURIs[i]});
-            e.candidateCount += 1;
+            uint256 cid = i + 1;
+            e.candidates[cid] = Candidate({
+                id: cid,
+                name: candidateNames[i],
+                wallet: address(0),
+                docURI: candidateDocURIs[i]
+            });
+            e.candidateCount++;
         }
 
         emit ElectionCreated(eid, title, startTime, endTime);
         return eid;
     }
 
-    /// @notice Cast a vote for a candidate in an election. Voter's weight is registry.getVotingPower(msg.sender).
-    /// @dev A voter can only vote once per election (full weight to one candidate). For split voting you'd need a more complex interface.
+    // ---------------------------------------------------------------------
+    // 🧩 ELECTION FLOW
+    // ---------------------------------------------------------------------
+
+    function startElection(uint256 electionId) external onlyOwner {
+        Election storage e = elections[electionId];
+        require(e.id != 0, "no election");
+        require(e.status == ElectionStatus.NotStarted, "already started or ended");
+        require(block.timestamp >= e.startTime, "too early to start");
+
+        e.status = ElectionStatus.Ongoing;
+        emit ElectionStarted(electionId, block.timestamp);
+    }
+
     function castVote(uint256 electionId, uint256 candidateId) external {
         Election storage e = elections[electionId];
         require(e.id != 0, "no election");
+        require(e.status == ElectionStatus.Ongoing, "election not active");
         require(block.timestamp >= e.startTime && block.timestamp <= e.endTime, "not in voting window");
         require(!e.hasVoted[msg.sender], "already voted");
         require(candidateId >= 1 && candidateId <= e.candidateCount, "invalid candidate");
@@ -107,50 +214,65 @@ contract ElectionManager {
         emit VoteCast(electionId, candidateId, msg.sender, weight);
     }
 
-    /// @notice Owner ends an election early (or after endTime) and can register final results doc to DocumentRegistry
-    function endElection(uint256 electionId, bytes32 resultsDocHash, string calldata resultsURI) external onlyOwner {
+    function endElection(
+        uint256 electionId,
+        bytes32 resultsDocHash,
+        string calldata resultsURI
+    ) external onlyOwner {
         Election storage e = elections[electionId];
         require(e.id != 0, "no election");
-        require(!e.ended, "already ended");
-        require(block.timestamp > e.endTime || block.timestamp >= e.endTime, "election not ended yet (owner may still end after endTime)");
+        require(e.status == ElectionStatus.Ongoing, "election not active");
+        require(block.timestamp >= e.endTime, "cannot end before endTime");
 
+        e.status = ElectionStatus.Ended;
         e.ended = true;
 
-        // register results doc on DocumentRegistry (optional)
         if (resultsDocHash != bytes32(0)) {
-            // requires that ElectionManager has permissions on DocumentRegistry in deployments where registerDocument isn't owner-only,
-            // or DocumentRegistry is implemented to allow this contract to register.
-            // If DocumentRegistry is owner-only, deployer must coordinate ownership or modify that contract.
             docRegistry.registerDocument(resultsDocHash, resultsURI);
         }
 
         emit ElectionEnded(electionId);
     }
 
-    /// @notice Get candidate count for an election
+    // ---------------------------------------------------------------------
+    // 🧩 VIEW FUNCTIONS
+    // ---------------------------------------------------------------------
+
     function getCandidateCount(uint256 electionId) external view returns (uint256) {
-        Election storage e = elections[electionId];
-        return e.candidateCount;
+        return elections[electionId].candidateCount;
     }
 
-    /// @notice Get candidate info (id, name, docURI)
-    function getCandidate(uint256 electionId, uint256 candidateId) external view returns (uint256 id, string memory name, string memory docURI, uint256 votesFor) {
+    function getCandidate(
+        uint256 electionId,
+        uint256 candidateId
+    )
+        external
+        view
+        returns (uint256 id, string memory name, address wallet, string memory docURI, uint256 votesFor)
+    {
         Election storage e = elections[electionId];
         require(candidateId >= 1 && candidateId <= e.candidateCount, "invalid candidate");
         Candidate storage c = e.candidates[candidateId];
         uint256 v = e.votes[candidateId];
-        return (c.id, c.name, c.docURI, v);
+        return (c.id, c.name, c.wallet, c.docURI, v);
     }
 
-    /// @notice Check if an address has voted in an election
     function hasVoted(uint256 electionId, address voter) external view returns (bool) {
-        Election storage e = elections[electionId];
-        return e.hasVoted[voter];
+        return elections[electionId].hasVoted[voter];
     }
 
-    /// @notice Utility: get basic election metadata
-    function getElectionMeta(uint256 electionId) external view returns (string memory title, uint256 startTime, uint256 endTime, bool ended, uint256 candidateCount) {
+    function getElectionMeta(
+        uint256 electionId
+    )
+        external
+        view
+        returns (string memory title, uint256 startTime, uint256 endTime, bool ended, uint256 candidateCount)
+    {
         Election storage e = elections[electionId];
         return (e.title, e.startTime, e.endTime, e.ended, e.candidateCount);
+    }
+
+    function getElectionStatus(uint256 electionId) external view returns (ElectionStatus) {
+        return elections[electionId].status;
     }
 }
