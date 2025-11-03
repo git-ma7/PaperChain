@@ -30,7 +30,6 @@ contract ElectionManager {
 
     struct Election {
         uint256 id;
-        string title;
         uint256 startTime;
         uint256 endTime;
         bool ended;
@@ -41,16 +40,12 @@ contract ElectionManager {
         ElectionStatus status;
     }
 
-    // electionId => Election
     mapping(uint256 => Election) private elections;
-
-    // Global candidate registry (bulk import)
     mapping(address => Candidate) public allCandidates;
 
-    // Events
     event CandidateRegistered(address indexed wallet, string name, uint256 indexed candidateId);
     event BulkCandidatesRegistered(uint256 count);
-    event ElectionCreated(uint256 indexed electionId, string title, uint256 startTime, uint256 endTime);
+    event ElectionCreated(uint256 indexed electionId, uint256 startTime, uint256 endTime);
     event ElectionStarted(uint256 indexed electionId, uint256 startTimestamp);
     event VoteCast(uint256 indexed electionId, uint256 indexed candidateId, address indexed voter, uint256 weight);
     event ElectionEnded(uint256 indexed electionId);
@@ -70,8 +65,6 @@ contract ElectionManager {
     // 🧩 CANDIDATE REGISTRATION
     // ---------------------------------------------------------------------
 
-    /// @notice Register candidates in bulk (for Excel import)
-    /// @dev Takes arrays of candidate names and wallet addresses
     function bulkRegisterCandidates(
         string[] calldata names,
         address[] calldata wallets
@@ -98,7 +91,6 @@ contract ElectionManager {
         emit BulkCandidatesRegistered(wallets.length);
     }
 
-    /// @notice Get details of a registered candidate (global)
     function getRegisteredCandidate(address wallet)
         external
         view
@@ -112,9 +104,7 @@ contract ElectionManager {
     // 🧩 ELECTION CREATION
     // ---------------------------------------------------------------------
 
-    /// @notice Create an election from registered candidates
     function createElectionFromRegisteredCandidates(
-        string calldata title,
         address[] calldata candidateWallets,
         uint256 startTime,
         uint256 endTime
@@ -126,7 +116,6 @@ contract ElectionManager {
         uint256 eid = electionCount;
         Election storage e = elections[eid];
         e.id = eid;
-        e.title = title;
         e.startTime = startTime;
         e.endTime = endTime;
         e.status = ElectionStatus.NotStarted;
@@ -141,13 +130,11 @@ contract ElectionManager {
             e.candidateCount++;
         }
 
-        emit ElectionCreated(eid, title, startTime, endTime);
+        emit ElectionCreated(eid, startTime, endTime);
         return eid;
     }
 
-    /// @notice Create a new election manually (without using registered candidates)
     function createElection(
-        string calldata title,
         string[] calldata candidateNames,
         string[] calldata candidateDocURIs,
         uint256 startTime,
@@ -162,7 +149,6 @@ contract ElectionManager {
 
         Election storage e = elections[eid];
         e.id = eid;
-        e.title = title;
         e.startTime = startTime;
         e.endTime = endTime;
         e.ended = false;
@@ -179,7 +165,7 @@ contract ElectionManager {
             e.candidateCount++;
         }
 
-        emit ElectionCreated(eid, title, startTime, endTime);
+        emit ElectionCreated(eid, startTime, endTime);
         return eid;
     }
 
@@ -214,11 +200,8 @@ contract ElectionManager {
         emit VoteCast(electionId, candidateId, msg.sender, weight);
     }
 
-    function endElection(
-        uint256 electionId,
-        bytes32 resultsDocHash,
-        string calldata resultsURI
-    ) external onlyOwner {
+    // 🟢 MODIFIED endElection (removed resultsDocHash & resultsURI)
+    function endElection(uint256 electionId) external onlyOwner {
         Election storage e = elections[electionId];
         require(e.id != 0, "no election");
         require(e.status == ElectionStatus.Ongoing, "election not active");
@@ -226,10 +209,6 @@ contract ElectionManager {
 
         e.status = ElectionStatus.Ended;
         e.ended = true;
-
-        if (resultsDocHash != bytes32(0)) {
-            docRegistry.registerDocument(resultsDocHash, resultsURI);
-        }
 
         emit ElectionEnded(electionId);
     }
@@ -266,10 +245,10 @@ contract ElectionManager {
     )
         external
         view
-        returns (string memory title, uint256 startTime, uint256 endTime, bool ended, uint256 candidateCount)
+        returns (uint256 startTime, uint256 endTime, bool ended, uint256 candidateCount)
     {
         Election storage e = elections[electionId];
-        return (e.title, e.startTime, e.endTime, e.ended, e.candidateCount);
+        return (e.startTime, e.endTime, e.ended, e.candidateCount);
     }
 
     function getElectionStatus(uint256 electionId) external view returns (ElectionStatus) {
