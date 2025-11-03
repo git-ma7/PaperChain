@@ -200,7 +200,6 @@ contract ElectionManager {
         emit VoteCast(electionId, candidateId, msg.sender, weight);
     }
 
-    // 🟢 MODIFIED endElection (removed resultsDocHash & resultsURI)
     function endElection(uint256 electionId) external onlyOwner {
         Election storage e = elections[electionId];
         require(e.id != 0, "no election");
@@ -253,5 +252,34 @@ contract ElectionManager {
 
     function getElectionStatus(uint256 electionId) external view returns (ElectionStatus) {
         return elections[electionId].status;
+    }
+
+    // ---------------------------------------------------------------------
+    // 🏆 WINNER FUNCTION
+    // ---------------------------------------------------------------------
+
+    function getWinner(uint256 electionId)
+        external
+        view
+        returns (string memory winnerName, uint256 winningVotes)
+    {
+        Election storage e = elections[electionId];
+        require(e.id != 0, "no election");
+        require(e.status == ElectionStatus.Ended, "election not ended");
+        require(e.candidateCount > 0, "no candidates");
+
+        uint256 highestVotes = 0;
+        uint256 winnerCandidateId = 0;
+
+        for (uint256 i = 1; i <= e.candidateCount; i++) {
+            uint256 candidateVotes = e.votes[i];
+            if (candidateVotes > highestVotes) {
+                highestVotes = candidateVotes;
+                winnerCandidateId = i;
+            }
+        }
+
+        Candidate storage winner = e.candidates[winnerCandidateId];
+        return (winner.name, highestVotes);
     }
 }
