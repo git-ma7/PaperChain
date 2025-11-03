@@ -46,13 +46,12 @@ class AddShareholders(APIView):
 @method_decorator(csrf_exempt,name='dispatch')
 class CreateElection(APIView):  
     def post(self,request,format=None):
-        title = request.data.get('title')
         wallets = request.data.get('wallets')
         startTime = request.data.get('startTime')
         endTime = request.data.get('endTime')
 
         try:
-            eid = contract1.functions.createElectionFromRegisteredCandidates(title,wallets,startTime,endTime).call()
+            eid = contract1.functions.createElectionFromRegisteredCandidates(wallets,startTime,endTime).call()
             return Response(
                 eid,status=status.HTTP_201_CREATED
             )

@@ -15,6 +15,7 @@ function BOD_Admin() {
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [timeLeft, setTimeLeft] = useState("");
+    const [electionId, setElectionId] = useState("");
 
     // ✅ Read Excel files properly
     const handleFileUpload = (file, setData) => {
@@ -70,6 +71,15 @@ function BOD_Admin() {
                 headers:{ 'Content-Type': 'multipart/form-data' },
             });
             console.log(res1,res2);
+            const names = votersData.map(row => row.Name?.trim());
+            const wallets = votersData.map(row => row.Wallet?.trim());
+            const sharesList = votersData.map(row => row.Shares);
+            await axios.post("http://localhost:8000/bod/add-shareholders",
+                {'names':names,
+                'wallets':wallets,
+                'shares':sharesList
+                }
+            )
             setUploaded(true);
             setError("");
             setMessage("Files uploaded successfully. You can now start elections.");
@@ -80,14 +90,35 @@ function BOD_Admin() {
     };
 
     // ✅ Start/Stop Elections
-    const toggleElection = () => {
+    const toggleElection = async () => {
         if (!electionStarted) {
             if (!startDate || !endDate) {
                 alert("Please select both start and end dates before starting elections.");
                 return;
             }
-            setElectionStarted(true);
+            try{
+                const wallets = candidatesData.map(row => row.Wallet?.trim());
+                const eid = await axios.post("http://8000/bod/create-election",
+                    {
+                        'wallets':wallets,
+                        'startTime':startDate,
+                        'endTime':endDate
+                    }
+                );
+                setElectionId(eid)
+                await axios.post("http://8000/bod/start-election",eid);
+                setElectionStarted(true);
+            }catch(err){
+                console.log(err);
+                alert("Election cannot be started.");
+            }
         } else {
+            try{
+                await axios.post("http://localhost:8000/bod/end-election",electionId);
+            }catch(err){
+                console.log(err);
+                alert("Election cannot be stopped");
+            }
             setElectionStarted(false);
             setTimeLeft("");
         }
