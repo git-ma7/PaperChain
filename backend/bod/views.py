@@ -9,10 +9,10 @@ from pathlib import Path
 
 
 w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
-CONTRACT_ADDRESS_1 = ""
+CONTRACT_ADDRESS_1 = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
 ABI_PATH_1 = Path(__file__).resolve().parent / "ElectionManager.json"
 
-CONTRACT_ADDRESS_2 = ""
+CONTRACT_ADDRESS_2 = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
 ABI_PATH_2 = Path(__file__).resolve().parent / "ShareholderRegistry.json"
 
 with open(ABI_PATH_1) as f:
@@ -27,6 +27,9 @@ with open(ABI_PATH_2) as f:
 contract1 = w3.eth.contract(address=CONTRACT_ADDRESS_1, abi=ABI1)
 contract2 = w3.eth.contract(address=CONTRACT_ADDRESS_2, abi=ABI2)
 
+address = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
+checksum_address = Web3.to_checksum_address(address)
+
 @method_decorator(csrf_exempt,name='dispatch')
 class AddShareholders(APIView):  
     def post(self,request,format=None):
@@ -35,29 +38,66 @@ class AddShareholders(APIView):
         shares = request.data.get('shares')
 
         try:
-            contract2.functions.startElection(names,wallets,shares).call()
+            contract2.functions.addShareholdersBulk(names,wallets,shares).call()
             return Response(
                 status=status.HTTP_201_CREATED
             )
         except Exception as e:
             return Response(str(e),
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-@method_decorator(csrf_exempt,name='dispatch')
-class CreateElection(APIView):  
-    def post(self,request,format=None):
+        
+@method_decorator(csrf_exempt, name='dispatch')
+class AddCandidates(APIView):
+    def post(self, request, format=None):
+        names = request.data.get('names')
         wallets = request.data.get('wallets')
-        startTime = request.data.get('startTime')
-        endTime = request.data.get('endTime')
 
         try:
-            eid = contract1.functions.createElectionFromRegisteredCandidates(wallets,startTime,endTime).call()
-            return Response(
-                eid,status=status.HTTP_201_CREATED
-            )
+            tx_hash = contract1.functions.bulkRegisterCandidates(names, wallets).transact({
+                'from': checksum_address
+            })
+            receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+            return Response({"status": "ok", "txHash": receipt.transactionHash.hex()})
         except Exception as e:
-            return Response(str(e),
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CreateElection(APIView):
+    def post(self, request, format=None):
+        wallets = request.data.get('wallets')
+        startTime = int(request.data.get('startTime'))
+        endTime = int(request.data.get('endTime'))
+
+        try:
+            # get owner account
+            owner = w3.eth.accounts[0]
+
+            # send transaction
+            tx_hash = contract1.functions.createElectionFromRegisteredCandidates(
+                wallets, startTime, endTime
+            ).transact({'from': owner})
+
+            # wait for confirmation
+            receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+
+            # extract the event log
+            logs = contract1.events.ElectionCreated().process_receipt(receipt)
+            if logs and len(logs) > 0:
+                eid = logs[0]['args']['electionId']
+            else:
+                eid = None
+
+            return Response(
+                {"electionId": eid, "txHash": tx_hash.hex()},
+                status=status.HTTP_201_CREATED
+            )
+
+        except Exception as e:
+            print("Error while creating election:", e)
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
 @method_decorator(csrf_exempt,name='dispatch')
 class StartElection(APIView):  

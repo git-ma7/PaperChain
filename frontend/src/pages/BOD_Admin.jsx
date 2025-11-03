@@ -74,10 +74,18 @@ function BOD_Admin() {
             const names = votersData.map(row => row.Name?.trim());
             const wallets = votersData.map(row => row.Wallet?.trim());
             const sharesList = votersData.map(row => row.Shares);
-            await axios.post("http://localhost:8000/bod/add-shareholders",
+            await axios.post("http://localhost:8000/bod/add-shareholders/",
                 {'names':names,
                 'wallets':wallets,
                 'shares':sharesList
+                }
+            )
+            const names_c = candidatesData.map(row => row.Name?.trim());
+            const wallets_c = candidatesData.map(row => row.Wallet?.trim());
+            console.log(names_c,wallets_c);
+            await axios.post("http://localhost:8000/bod/add-candidates/",
+                {'names':names_c,
+                'wallets':wallets_c
                 }
             )
             setUploaded(true);
@@ -96,33 +104,39 @@ function BOD_Admin() {
                 alert("Please select both start and end dates before starting elections.");
                 return;
             }
-            try{
+            try {
                 const wallets = candidatesData.map(row => row.Wallet?.trim());
-                const eid = await axios.post("http://8000/bod/create-election",
-                    {
-                        'wallets':wallets,
-                        'startTime':startDate,
-                        'endTime':endDate
-                    }
-                );
-                setElectionId(eid)
-                await axios.post("http://8000/bod/start-election",eid);
+                const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
+                const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000);
+                console.log(wallets)
+                const res = await axios.post("http://localhost:8000/bod/create-election/", {
+                    wallets,
+                    startTime: startTimestamp,
+                    endTime: endTimestamp
+                });
+
+                const eid = res.data.electionId;
+                console.log("Election ID:", eid);
+                setElectionId(eid);
+
+                await axios.post("http://localhost:8000/bod/start-election/", { eid: eid });
                 setElectionStarted(true);
-            }catch(err){
-                console.log(err);
+            } catch (err) {
+                console.error(err);
                 alert("Election cannot be started.");
             }
         } else {
-            try{
-                await axios.post("http://localhost:8000/bod/end-election",electionId);
-            }catch(err){
-                console.log(err);
+            try {
+                await axios.post("http://localhost:8000/bod/end-election/", { eid: electionId });
+                setElectionStarted(false);
+                setTimeLeft("");
+            } catch (err) {
+                console.error(err);
                 alert("Election cannot be stopped");
             }
-            setElectionStarted(false);
-            setTimeLeft("");
         }
     };
+
 
     // ✅ Countdown Timer
     useEffect(() => {
