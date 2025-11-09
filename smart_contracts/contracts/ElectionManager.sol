@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
+import "hardhat/console.sol";
 
 interface IShareholderRegistry {
     function getVotingPower(address wallet) external view returns (uint256);
@@ -174,11 +175,10 @@ contract ElectionManager {
     // ---------------------------------------------------------------------
 
     function startElection(uint256 electionId) external onlyOwner {
+        console.log("Starting election:",electionId);
         Election storage e = elections[electionId];
         require(e.id != 0, "no election");
         require(e.status == ElectionStatus.NotStarted, "already started or ended");
-        require(block.timestamp >= e.startTime, "too early to start");
-
         e.status = ElectionStatus.Ongoing;
         emit ElectionStarted(electionId, block.timestamp);
     }
@@ -202,9 +202,9 @@ contract ElectionManager {
 
     function endElection(uint256 electionId) external onlyOwner {
         Election storage e = elections[electionId];
+        console.log("Ending election:",electionId);
         require(e.id != 0, "no election");
         require(e.status == ElectionStatus.Ongoing, "election not active");
-        require(block.timestamp >= e.endTime, "cannot end before endTime");
 
         e.status = ElectionStatus.Ended;
         e.ended = true;

@@ -6,8 +6,8 @@ import axios from "axios";
 function BOD_Admin() {
     const [candidatesData, setCandidatesData] = useState(null);
     const [votersData, setVotersData] = useState(null);
-    const [candidateFile,setCandidateFile] = useState(null);
-    const [votersFile,setVotersFile] = useState(null);
+    const [candidateFile, setCandidateFile] = useState(null);
+    const [votersFile, setVotersFile] = useState(null);
     const [uploaded, setUploaded] = useState(false);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
@@ -59,84 +59,133 @@ function BOD_Admin() {
         }
 
         const formData1 = new FormData();
-        formData1.append('file',candidateFile);
+        formData1.append("file", candidateFile);
         const formData2 = new FormData();
-        formData2.append('file',votersFile);
+        formData2.append("file", votersFile);
 
-        try{
-            const res1 = await axios.post("http://localhost:8000/docs/upload",formData1,{
-                headers:{ 'Content-Type': 'multipart/form-data' },
+        try {
+            const res1 = await axios.post("http://localhost:8000/docs/upload", formData1, {
+                headers: { "Content-Type": "multipart/form-data" },
             });
-            const res2 = await axios.post("http://localhost:8000/docs/upload",formData2,{
-                headers:{ 'Content-Type': 'multipart/form-data' },
+            const parsed = JSON.parse(res1.data[0]);  // convert JSON string to object
+            const ipfsHash = parsed.Hash;              // extract Hash
+
+            localStorage.setItem("cid_candidates", ipfsHash);
+            
+            const res2 = await axios.post("http://localhost:8000/docs/upload", formData2, {
+                headers: { "Content-Type": "multipart/form-data" },
             });
-            console.log(res1,res2);
-            const names = votersData.map(row => row.Name?.trim());
-            const wallets = votersData.map(row => row.Wallet?.trim());
-            const sharesList = votersData.map(row => row.Shares);
-            await axios.post("http://localhost:8000/bod/add-shareholders/",
-                {'names':names,
-                'wallets':wallets,
-                'shares':sharesList
-                }
-            )
-            const names_c = candidatesData.map(row => row.Name?.trim());
-            const wallets_c = candidatesData.map(row => row.Wallet?.trim());
-            console.log(names_c,wallets_c);
-            await axios.post("http://localhost:8000/bod/add-candidates/",
-                {'names':names_c,
-                'wallets':wallets_c
-                }
-            )
+
+            console.log(res1, res2);
+
+            const names = votersData.map((row) => row.Name?.trim());
+            const wallets = votersData.map((row) => row.Wallet?.trim());
+            const sharesList = votersData.map((row) => row.Shares);
+
+            await axios.post("http://localhost:8000/bod/add-shareholders/", {
+                names,
+                wallets,
+                shares: sharesList,
+            });
+
+            const names_c = candidatesData.map((row) => row.Name?.trim());
+            const wallets_c = candidatesData.map((row) => row.Wallet?.trim());
+
+            await axios.post("http://localhost:8000/bod/add-candidates/", {
+                names: names_c,
+                wallets: wallets_c,
+            });
+
             setUploaded(true);
             setError("");
-            setMessage("Files uploaded successfully. You can now start elections.");
-        }catch(err){
+            setMessage("Files uploaded successfully. You can now create elections.");
+        } catch (err) {
             console.log(err);
             alert("Upload failed");
         }
     };
 
-    // ✅ Start/Stop Elections
+    // ✅ Create election and schedule automatic start/end
     const toggleElection = async () => {
         if (!electionStarted) {
             if (!startDate || !endDate) {
-                alert("Please select both start and end dates before starting elections.");
+                alert("Please select both start and end dates before creating the election.");
                 return;
             }
+
             try {
-                const wallets = candidatesData.map(row => row.Wallet?.trim());
+                const wallets = candidatesData.map((row) => row.Wallet?.trim());
                 const startTimestamp = Math.floor(new Date(startDate).getTime() / 1000);
                 const endTimestamp = Math.floor(new Date(endDate).getTime() / 1000);
-                console.log(wallets)
+
                 const res = await axios.post("http://localhost:8000/bod/create-election/", {
                     wallets,
                     startTime: startTimestamp,
-                    endTime: endTimestamp
+                    endTime: endTimestamp,
                 });
 
                 const eid = res.data.electionId;
-                console.log("Election ID:", eid);
                 setElectionId(eid);
+                setMessage("Election created successfully! It will start automatically at the selected time.");
 
-                await axios.post("http://localhost:8000/bod/start-election/", { eid: eid });
-                setElectionStarted(true);
+                const now = Date.now();
+                const startTimeMs = new Date(startDate).getTime();
+                const endTimeMs = new Date(endDate).getTime();
+
+                const startDelay = startTimeMs - now;
+                const endDelay = endTimeMs - now;
+
+                // ✅ Schedule automatic start
+                if (startDelay > 1) {
+                    setTimeout(async () => {
+                        try {
+                            console.log("Starting: ",eid)
+                            await axios.post("http://localhost:8000/bod/start-election/", { eid });
+                            setElectionStarted(true);
+                            setMessage("Election started automatically!");
+                        } catch (err) {
+                            console.error("Auto-start failed:", err);
+                            setError("Failed to start election automatically.");
+                        }
+                    }, startDelay);
+                } else {
+                    // If start time is already passed, start immediately
+                    await axios.post("http://localhost:8000/bod/start-election/", { eid });
+                    setElectionStarted(true);
+                    setMessage("Election started immediately!");
+                }
+
+                // ✅ Schedule automatic end
+                if (endDelay > 1) {
+                    setTimeout(async () => {
+                        try {
+                            console.log("Ending:",eid)
+                            await axios.post("http://localhost:8000/bod/end-election/", { eid });
+                            setElectionStarted(false);
+                            setMessage("Election ended automatically!");
+                        } catch (err) {
+                            console.error("Auto-end failed:", err);
+                            setError("Failed to end election automatically.");
+                        }
+                    }, endDelay);
+                }
             } catch (err) {
                 console.error(err);
-                alert("Election cannot be started.");
+                alert("Election could not be created.");
             }
         } else {
+            // Optional manual stop
             try {
                 await axios.post("http://localhost:8000/bod/end-election/", { eid: electionId });
                 setElectionStarted(false);
                 setTimeLeft("");
+                setMessage("Election ended manually.");
             } catch (err) {
                 console.error(err);
-                alert("Election cannot be stopped");
+                alert("Election cannot be stopped manually.");
             }
         }
     };
-
 
     // ✅ Countdown Timer
     useEffect(() => {
@@ -239,8 +288,8 @@ function BOD_Admin() {
                                             className="text-red-600 font-semibold hover:underline"
                                             onClick={() => {
                                                 setCandidateFile(null);
-                                                setCandidatesData(null);}
-                                            }
+                                                setCandidatesData(null);
+                                            }}
                                         >
                                             Remove
                                         </button>
@@ -292,8 +341,8 @@ function BOD_Admin() {
                                             className="text-red-600 font-semibold hover:underline"
                                             onClick={() => {
                                                 setVotersFile(null);
-                                                setVotersData(null);}
-                                            }
+                                                setVotersData(null);
+                                            }}
                                         >
                                             Remove
                                         </button>
@@ -337,11 +386,10 @@ function BOD_Admin() {
                             )}
 
                             <button
-                                className={`w-full p-2 font-semibold rounded-sm text-white ${electionStarted ? "bg-red-600" : "bg-green-600"
-                                    }`}
+                                className={`w-full p-2 font-semibold rounded-sm text-white bg-green-600`}
                                 onClick={toggleElection}
                             >
-                                {electionStarted ? "Stop Elections" : "Start Elections"}
+                                {electionStarted ? "Election Started" : "Create Election"}
                             </button>
 
                             <p className="text-green-600 font-medium">{message}</p>

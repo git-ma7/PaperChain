@@ -6,7 +6,9 @@ from django.utils.decorators import method_decorator
 import json
 from web3 import Web3
 from pathlib import Path
-
+import requests
+import openpyxl
+import io
 
 w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
 CONTRACT_ADDRESS_1 = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"
@@ -87,7 +89,7 @@ class CreateElection(APIView):
                 eid = logs[0]['args']['electionId']
             else:
                 eid = None
-
+            print(eid)
             return Response(
                 {"electionId": eid, "txHash": tx_hash.hex()},
                 status=status.HTTP_201_CREATED
@@ -103,9 +105,16 @@ class CreateElection(APIView):
 class StartElection(APIView):  
     def post(self,request,format=None):
         electionId = request.data.get('eid')
+        print(f"Starting: {electionId}")
 
         try:
-            contract1.functions.startElection(electionId).call()
+            # get owner account
+            owner = w3.eth.accounts[0]
+
+            # send transaction
+            tx_hash = contract1.functions.startElection(
+                electionId
+            ).transact({'from': owner})
             return Response(
                 status=status.HTTP_200_OK
             )
@@ -117,6 +126,7 @@ class StartElection(APIView):
 class EndElection(APIView):  
     def post(self,request,format=None):
         electionId = request.data.get('eid')
+        print(f"Ending: {electionId}")
 
         try:
             contract1.functions.endElection(electionId).call()
@@ -141,3 +151,32 @@ class CastVote(APIView):
         except Exception as e:
             return Response(str(e),
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+@method_decorator(csrf_exempt, name='dispatch')
+class GetCandidates(APIView):
+    def get(self, request, format=None):
+        cid = request.GET.get("cid")
+        if not cid:
+            return Response({"error": "CID not provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            ipfs_url = f"http://127.0.0.1:8080/ipfs/{cid}"
+            res = requests.get(ipfs_url)
+            res.raise_for_status()
+
+            # Parse Excel file directly from memory
+            file_stream = io.BytesIO(res.content)
+            workbook = openpyxl.load_workbook(file_stream)
+            sheet = workbook.active
+
+            # Convert Excel rows to JSON
+            data = []
+            headers = [cell.value for cell in sheet[1]]
+            for row in sheet.iter_rows(min_row=2, values_only=True):
+                row_dict = dict(zip(headers, row))
+                data.append(row_dict)
+
+            return Response({"candidates": data}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
