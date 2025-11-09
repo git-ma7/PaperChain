@@ -9,6 +9,11 @@ import Notice from "./pages/Notice";
 import BOD from "./pages/BOD";
 import NoticeAdmin from "./pages/NoticeAdmin";
 import BOD_Admin from "./pages/BOD_Admin";
+import AMA from "./pages/AMA";
+import Mergers from "./pages/Mergers";
+import Aquisitions from "./pages/Aquisitions";
+import MergerAdmin from "./pages/MergerAdmin";
+import AquisitionAdmin from "./pages/AquisitionAdmin";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Wrapper to use useLocation inside Router
@@ -28,6 +33,11 @@ function AppWrapper() {
         <Route path="/notice" element={<Notice />} />
         <Route path="/bod" element={<BOD />} />
         <Route path="/bod-admin" element={<BOD_Admin />} />
+        <Route path="/ama" element={<AMA />} />
+        <Route path="/mergers" element={<Mergers />} />
+        <Route path="/mergers-admin" element={<MergerAdmin />} />
+        <Route path="/aquisitions" element={<Aquisitions />} />
+        <Route path="/aquisition-admin" element={<AquisitionAdmin />} />
         <Route
           path="/notice-admin"
           element={
