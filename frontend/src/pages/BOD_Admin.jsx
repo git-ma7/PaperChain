@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 import Sidebar from "../components/Sidebar";
 import axios from "axios";
+import toast, { Toaster } from 'react-hot-toast';
 
 function BOD_Admin() {
     const [candidatesData, setCandidatesData] = useState(null);
@@ -126,6 +127,7 @@ function BOD_Admin() {
 
                 const eid = res.data.electionId;
                 setElectionId(eid);
+                localStorage.setItem("election_id", eid);
                 setMessage("Election created successfully! It will start automatically at the selected time.");
 
                 const now = Date.now();
@@ -476,6 +478,7 @@ function BOD_Admin() {
                     </div>
                 )}
             </div>
+            <Toaster />
         </div>
     );
 }

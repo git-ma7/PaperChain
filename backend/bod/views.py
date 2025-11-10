@@ -32,21 +32,58 @@ contract2 = w3.eth.contract(address=CONTRACT_ADDRESS_2, abi=ABI2)
 address = "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266"
 checksum_address = Web3.to_checksum_address(address)
 
-@method_decorator(csrf_exempt,name='dispatch')
+@method_decorator(csrf_exempt, name='dispatch')
 class AddShareholders(APIView):  
-    def post(self,request,format=None):
+    def post(self, request, format=None):
         names = request.data.get('names')
         wallets = request.data.get('wallets')
         shares = request.data.get('shares')
 
-        try:
-            contract2.functions.addShareholdersBulk(names,wallets,shares).call()
+        # ✅ Input validation
+        if not names or not wallets or not shares:
             return Response(
+                {"error": "Missing names, wallets, or shares."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # ✅ Convert all wallet addresses to checksum format
+            checksum_wallets = []
+            for w in wallets:
+                try:
+                    checksum_wallets.append(Web3.to_checksum_address(w))
+                except Exception as e:
+                    return Response(
+                        {"error": f"Invalid wallet address: {w}. Details: {str(e)}"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+            # ✅ Optional: Check all list lengths match
+            if not (len(names) == len(checksum_wallets) == len(shares)):
+                return Response(
+                    {"error": "names, wallets, and shares arrays must be the same length."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # ✅ Call contract function
+            tx = contract2.functions.addShareholdersBulk(
+                names,
+                checksum_wallets,
+                shares
+            ).transact({
+                'from': checksum_address
+            })
+
+            return Response(
+                {"message": "Shareholders added successfully."},
                 status=status.HTTP_201_CREATED
             )
+
         except Exception as e:
-            return Response(str(e),
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
         
 @method_decorator(csrf_exempt, name='dispatch')
 class AddCandidates(APIView):
@@ -129,7 +166,11 @@ class EndElection(APIView):
         print(f"Ending: {electionId}")
 
         try:
-            contract1.functions.endElection(electionId).call()
+            # get owner account
+            owner = w3.eth.accounts[0]
+            tx_hash = contract1.functions.endElection(
+                electionId
+            ).transact({'from': owner})
             return Response(
                 status=status.HTTP_200_OK
             )
@@ -144,7 +185,10 @@ class CastVote(APIView):
         candidateId = request.data.get('cid')
 
         try:
-            contract1.functions.castVote(electionId,candidateId).call()
+            owner = w3.eth.accounts[0]
+            tx_hash = contract1.functions.castVote(
+                electionId,candidateId
+            ).transact({'from': owner})
             return Response(
                 status=status.HTTP_200_OK
             )
@@ -180,3 +224,33 @@ class GetCandidates(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+@method_decorator(csrf_exempt, name='dispatch')
+class GetWinner(APIView):
+    def get(self, request, format=None):
+        election_id = request.GET.get('election_id')
+
+        if not election_id:
+            return Response(
+                {"error": "Election ID is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # ✅ Call the smart contract view function
+            winner_name, winning_votes = contract1.functions.getWinner(int(election_id)).call()
+
+            return Response(
+                {
+                    "winner_name": winner_name,
+                    "winning_votes": int(winning_votes)
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+            print("❌ Error fetching winner:", e)
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

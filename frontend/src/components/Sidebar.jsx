@@ -86,6 +86,18 @@ function Sidebar() {
                                 <Link className="w-full" to="/vote">Voting</Link>
                             </li>
 
+                            {/* BOD_Admin */}
+                            {user?.role === 'Unknown' ?
+                            <li
+                                className={`flex gap-2 items-center sidebar-li p-2 rounded-lg transition-all duration-150 ease-in-out ${location.pathname === '/bod-admin'
+                                        ? 'bg-black text-white font-medium'
+                                        : 'hover:bg-black hover:text-white'
+                                    }`}
+                            >
+                                <MdHowToVote size={22} />
+                                <Link className="w-full" to="/bod-admin">BOD</Link>
+                            </li>: null}
+
                             {/* Notice */}
                             <li
                                 className={`flex gap-2 items-center sidebar-li p-2 rounded-lg transition-all duration-150 ease-in-out ${location.pathname === '/notice' || location.pathname === '/notice-admin'
