@@ -1,5 +1,5 @@
 import React from 'react';
-import profile from '../assets/profile.jpg';
+import { FaUserCircle } from 'react-icons/fa';
 
 function BOD_Candidates({ name, onVote, isVoted, isDisabled }) {
     return (
@@ -12,7 +12,7 @@ function BOD_Candidates({ name, onVote, isVoted, isDisabled }) {
             `}
         >
             <div className="p-4">
-                <img src={profile} alt="profile" className="rounded-sm" />
+                <img src={<FaUserCircle/>} alt="profile" className="rounded-sm" />
 
                 <div className="flex gap-2 items-center justify-between mt-2">
                     <h1 className="font-bold text-black">{name}</h1>

@@ -77,7 +77,7 @@ function Sidebar() {
 
                             {/* Voting */}
                             <li
-                                className={`flex gap-2 items-center sidebar-li p-2 rounded-lg transition-all duration-150 ease-in-out ${location.pathname === '/vote'
+                                className={`flex gap-2 items-center sidebar-li p-2 rounded-lg transition-all duration-150 ease-in-out ${location.pathname === '/vote' || location.pathname === '/bod' || location.pathname === '/bod-admin' || location.pathname === '/ama' || location.pathname === '/mergers' || location.pathname === '/mergers-admin' || location.pathname === '/aquisitions' || location.pathname === '/aquisition-admin'
                                         ? 'bg-black text-white font-medium'
                                         : 'hover:bg-black hover:text-white'
                                     }`}

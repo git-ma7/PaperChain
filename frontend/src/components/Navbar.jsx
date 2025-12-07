@@ -66,6 +66,12 @@ function Navbar() {
                         </Link>
                         <Link
                             className="w-full relative cursor-pointer font-medium after:hidden after:rounded-full md:after:block after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[1.5px] after:bg-black after:transition-all after:duration-300 hover:after:w-full"
+                            to="/about"
+                        >
+                            About
+                        </Link>
+                        <Link
+                            className="w-full relative cursor-pointer font-medium after:hidden after:rounded-full md:after:block after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-[1.5px] after:bg-black after:transition-all after:duration-300 hover:after:w-full"
                             to="/dashboard"
                         >
                             Dashboard
